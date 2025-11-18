@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#60A5FA">
+    <title>TIMERA - Smart Time Manager</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #E0F2FE 0%, #BFDBFE 100%);
+            min-height: 100vh;
+            padding-bottom: 100px;
+            overflow-x: hidden;
+        }
+        
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .page {
+            display: none;
+            padding: 20px;
+            padding-bottom: 100px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            color: white;
+            padding: 25px 20px;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 20px;
+        }
+        
+        .greeting {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .user-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+        
+        .date-info {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        /* Focus Timer */
+        .timer-circle {
+            width: 250px;
+            height: 250px;
+            margin: 30px auto;
+            position: relative;
+        }
+        
+        .timer-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: 600;
+            color: #3B82F6;
+        }
+        
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn-timer {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-timer.play {
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            color: white;
+        }
+        
+        .btn-timer.pause {
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            color: white;
+        }
+        
+        .btn-timer.stop {
+            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+            color: white;
+        }
+        
+        /* Calendar */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .calendar-day:hover {
+            background: #DBEAFE;
+        }
+        
+        .calendar-day.today {
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .calendar-day.has-event {
+            position: relative;
+        }
+        
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            width: 6px;
+            height: 6px;
+            background: #F59E0B;
+            border-radius: 50%;
+        }
+        
+        /* Task Timeline */
+        .timeline-item {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3B82F6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+        
+        .timeline-time {
+            font-size: 12px;
+            color: #6B7280;
+            font-weight: 500;
+        }
+        
+        .timeline-title {
+            font-weight: 600;
+            color: #1F2937;
+            margin: 5px 0;
+        }
+        
+        .timeline-duration {
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+        
+        /* Device Connection */
+        .device-card {
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .device-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10B981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Stats */
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #3B82F6;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #6B7280;
+        }
+        
+        /* Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 480px;
+            width: 100%;
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            border-radius: 30px 30px 0 0;
+        }
+        
+        .nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            color: #9CA3AF;
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+            color: #3B82F6;
+        }
+        
+        .nav-item i {
+            font-size: 24px;
+        }
+        
+        .nav-item span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        /* Voice Search */
+        .voice-search-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            color: white;
+            border: none;
+            font-size: 32px;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .voice-search-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .voice-search-btn.listening {
+            animation: listening 1.5s infinite;
+        }
+        
+        @keyframes listening {
+            0%, 100% { box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); }
+            50% { box-shadow: 0 8px 40px rgba(59, 130, 246, 0.8); }
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #D1D5DB;
+            transition: 0.3s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+        
+        /* Settings List */
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .settings-item-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .settings-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3B82F6;
+            font-size: 20px;
+        }
+        
+        /* Buttons */
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            color: white;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-outline-custom {
+            background: white;
+            border: 2px solid #3B82F6;
+            padding: 15px 30px;
+            border-radius: 15px;
+            color: #3B82F6;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* Modal */
+        .modal-content {
+            border-radius: 25px;
+            border: none;
+        }
+        
+        .modal-header {
+            border-bottom: none;
+            padding: 25px 25px 10px;
+        }
+        
+        .modal-body {
+            padding: 20px 25px 25px;
+        }
+        
+        /* Profile */
+        .profile-header {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            margin: 0 auto 15px;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Responsive */
+        @media (max-width: 576px) {
+            .timer-circle {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .timer-display {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Home Page -->
+        <div id="homePage" class="page active">
+            <div class="app-header">
+                <div class="greeting">Selamat Datang 👋</div>
+                <div class="user-name" id="userName">Pengguna TIMERA</div>
+                <div class="date-info" id="currentDate"></div>
+            </div>
+            
+            <!-- MetaGlasses Status -->
+            <div class="device-card">
+                <div class="device-icon"><i class="fas fa-glasses"></i></div>
+                <h5>MetaGlasses</h5>
+                <div class="device-status">
+                    <div class="status-dot"></div>
+                    <span id="deviceStatusText">Terhubung - AR Ready</span>
+                </div>
+                <small id="deviceType">iPhone 16</small>
+            </div>
+            
+            <!-- Today's Stats -->
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <div class="stat-card">
+                        <i class="fas fa-clock" style="color: #3B82F6; font-size: 24px;"></i>
+                        <div class="stat-value" id="focusTimeToday">0h</div>
+                        <div class="stat-label">Fokus Hari Ini</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-card">
+                        <i class="fas fa-check-circle" style="color: #10B981; font-size: 24px;"></i>
+                        <div class="stat-value" id="tasksCompleted">0</div>
+                        <div class="stat-label">Tugas Selesai</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Today's Schedule -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-calendar-day me-2"></i> Jadwal Hari Ini
+                </div>
+                <div class="card-body" id="todaySchedule">
+                    <div class="timeline-item">
+                        <div class="timeline-time">09:00 - 11:00</div>
+                        <div class="timeline-title">Meeting Tim</div>
+                        <div class="timeline-duration">2 jam</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">14:00 - 16:00</div>
+                        <div class="timeline-title">Focus Session - Coding</div>
+                        <div class="timeline-duration">2 jam</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="row g-3">
+                <div class="col-6">
+                    <button class="btn-primary-custom" onclick="startFocusSession()">
+                        <i class="fas fa-play me-2"></i> Mulai Fokus
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button class="btn-outline-custom" onclick="showPage('calendarPage')">
+                        <i class="fas fa-calendar me-2"></i> Lihat Agenda
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calendar Page -->
+        <div id="calendarPage" class="page">
+            <div class="app-header">
+                <h4><i class="fas fa-calendar-alt me-2"></i> Kalender & Agenda</h4>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <button class="btn btn-sm btn-light" onclick="changeMonth(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h5 class="mb-0" id="currentMonth">November 2025</h5>
+                        <button class="btn btn-sm btn-light" onclick="changeMonth(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Calendar days will be generated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Schedule for Selected Date -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-list me-2"></i> Agenda <span id="selectedDateText">Hari Ini</span>
+                </div>
+                <div class="card-body" id="selectedDateSchedule">
+                    <!-- Schedule items will be shown here -->
+                </div>
+            </div>
+            
+            <button class="btn-primary-custom mt-3" onclick="showAddTaskModal()">
+                <i class="fas fa-plus me-2"></i> Tambah Agenda
+            </button>
+        </div>
+        
+        <!-- Focus Timer Page -->
+        <div id="timerPage" class="page">
+            <div class="app-header">
+                <h4><i class="fas fa-brain me-2"></i> Focus Session</h4>
+            </div>
+            
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="mb-4">Sesi Fokus Aktif</h5>
+                    
+                    <div class="timer-circle">
+                        <svg width="250" height="250">
+                            <circle cx="125" cy="125" r="110" fill="none" stroke="#E5E7EB" stroke-width="12"/>
+                            <circle id="timerProgress" cx="125" cy="125" r="110" fill="none" 
+                                    stroke="url(#gradient)" stroke-width="12" 
+                                    stroke-dasharray="691" stroke-dashoffset="691"
+                                    transform="rotate(-90 125 125)" stroke-linecap="round"/>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#3B82F6"/>
+                                    <stop offset="100%" style="stop-color:#60A5FA"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="timer-display" id="timerDisplay">25:00</div>
+                    </div>
+                    
+                    <div class="timer-controls">
+                        <button class="btn-timer play" id="playBtn" onclick="toggleTimer()">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="btn-timer stop" onclick="stopTimer()">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Aplikasi Diblokir:</h6>
+                        <div id="blockedApps" class="d-flex gap-2 justify-content-center flex-wrap mt-2">
+                            <span class="badge bg-danger">Instagram</span>
+                            <span class="badge bg-danger">TikTok</span>
+                            <span class="badge bg-danger">Twitter</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Search Page -->
+        <div id="searchPage" class="page">
+            <div class="app-header">
+                <h4><i class="fas fa-robot me-2"></i> AI Voice Assistant</h4>
+            </div>
+            
+            <div class="text-center">
+                <button class="voice-search-btn" id="voiceBtn" onclick="startVoiceSearch()">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <p class="text-muted">Ketuk untuk mulai pencarian suara</p>
+                <p class="small" id="voiceStatus">Siap mendengarkan...</p>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <i class="fas fa-comments me-2"></i> Riwayat Pencarian
+                </div>
+                <div class="card-body" id="searchHistory">
+                    <div class="timeline-item">
+                        <div class="timeline-title">Apa jadwal saya hari ini?</div>
+                        <div class="timeline-duration">2 menit lalu</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Bagaimana meningkatkan fokus?</div>
+                        <div class="timeline-duration">1 jam lalu</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-lightbulb me-2"></i> Contoh Pertanyaan
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="askAI('Apa jadwal saya hari ini?')">
+                            "Apa jadwal saya hari ini?"
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="askAI('Berapa lama saya fokus minggu ini?')">
+                            "Berapa lama saya fokus minggu ini?"
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="askAI('Ingatkan saya 10 menit sebelum meeting')">
+                            "Ingatkan saya 10 menit sebelum meeting"
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Page -->
+        <div id="settingsPage" class="page">
+            <div class="app-header">
+                <h4><i class="fas fa-cog me-2"></i> Pengaturan</h4>
+            </div>
+            
+            <!-- Profile Section -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h5 id="profileName">Pengguna TIMERA</h5>
+                <p class="text-muted small">timera.user@email.com</p>
+            </div>
+            
+            <!-- Device Settings -->
+            <h6 class="text-muted mb-3">Perangkat</h6>
+            <div class="settings-item">
+                <div class="settings-item-info">
+                    <div class="settings-icon">
+                        <i class="fas fa-glasses"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">MetaGlasses</div>
+                        <small class="text-muted">Terhubung</small>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-danger" onclick="disconnectDevice()">
+                    Putuskan
+                </button>
+            </div>
+            
+            <!-- App Settings -->
+            <h6 class="text-muted mb-3 mt-4">Aplikasi</h6>
+            <div class="settings-item">
+                <div class="settings-item-info">
+                    <div class="settings-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">Notifikasi</div>
+                        <small class="text-muted">Hanya penting</small>
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div class="settings-item-info">
+                    <div class="settings-icon">
+                        <i class="fas fa-volume-up"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">Intensitas Getaran</div>
+                        <small class="text-muted">Medium</small>
+                    </div>
+                </div>
+                <select class="form-select form-select-sm" style="width: 100px;">
+                    <option>Rendah</option>
+                    <option selected>Medium</option>
+                    <option>Tinggi</option>
+                </select>
+            </div>
+            
+            <div class="settings-item">
+                <div class="settings-item-info">
+                    <div class="settings-icon">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">Bahasa</div>
+                        <small class="text-muted">Indonesia</small>
+                    </div>
+                </div>
+                <select class="form-select form-select-sm" style="width: 120px;">
+                    <option selected>Indonesia</option>
+                    <option>English</option>
+                </select>
+            </div>
+            
+            <div class="settings-item" onclick="showBlockedAppsModal()">
+                <div class="settings-item-info">
+                    <div class="settings-icon">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">Aplikasi Diblokir</div>
+                        <small class="text-muted">3 aplikasi</small>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-muted"></i>
+            </div>
+            
+            <!-- Statistics -->
+            <h6 class="text-muted mb-3 mt-4">Statistik</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <div class="stat-card">
+                        <div class="stat-value">48h</div>
+                        <div class="stat-label">Total Fokus</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-card">
+                        <div class="stat-value">127</div>
+                        <div class="stat-label">Tugas Selesai</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-items">
+                <div class="nav-item active" onclick="showPage('homePage')">
+                    <i class="fas fa-home"></i>
+                    <span>Beranda</span>
+                </div>
+                <div class="nav-item" onclick="showPage('calendarPage')">
+                    <i class="fas fa-calendar"></i>
+                    <span>Kalender</span>
+                </div>
+                <div class="nav-item" onclick="showPage('timerPage')">
+                    <i class="fas fa-brain"></i>
+                    <span>Fokus</span>
+                </div>
+                <div class="nav-item" onclick="showPage('searchPage')">
+                    <i class="fas fa-robot"></i>
+                    <span>AI</span>
+                </div>
+                <div class="nav-item" onclick="showPage('settingsPage')">
+                    <i class="fas fa-cog"></i>
+                    <span>Pengaturan</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Task Modal -->
+    <div class="modal fade" id="addTaskModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i> Tambah Agenda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Judul</label>
+                        <input type="text" class="form-control" id="taskTitle" placeholder="Nama aktivitas">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tanggal</label>
+                        <input type="date" class="form-control" id="taskDate">
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Waktu Mulai</label>
+                            <input type="time" class="form-control" id="taskStartTime">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Waktu Selesai</label>
+                            <input type="time" class="form-control" id="taskEndTime">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kategori</label>
+                        <select class="form-select" id="taskCategory">
+                            <option>Meeting</option>
+                            <option>Focus Session</option>
+                            <option>Break</option>
+                            <option>Tugas</option>
+                            <option>Lainnya</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary-custom" onclick="addTask()">
+                        <i class="fas fa-save me-2"></i> Simpan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Blocked Apps Modal -->
+    <div class="modal fade" id="blockedAppsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-ban me-2"></i> Aplikasi Diblokir</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Aplikasi ini akan diblokir saat sesi fokus aktif</p>
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-icon" style="background: linear-gradient(135deg, #E11D48 0%, #F43F5E 100%);">
+                                <i class="fab fa-instagram"></i>
+                            </div>
+                            <div>Instagram</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-icon" style="background: linear-gradient(135deg, #000000 0%, #333333 100%);">
+                                <i class="fab fa-tiktok"></i>
+                            </div>
+                            <div>TikTok</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-icon" style="background: linear-gradient(135deg, #1DA1F2 0%, #14A1F0 100%);">
+                                <i class="fab fa-twitter"></i>
+                            </div>
+                            <div>Twitter</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-icon" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <div>WhatsApp</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Anime.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <script>
+        // App State
+        let currentPage = 'homePage';
+        let timerInterval = null;
+        let timerSeconds = 1500; // 25 minutes
+        let isTimerRunning = false;
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let selectedDate = new Date();
+        
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadUserData();
+            updateDate();
+            generateCalendar();
+            loadTasks();
+            registerServiceWorker();
+        });
+        
+        function initializeApp() {
+            const userName = localStorage.getItem('userName') || 'Pengguna TIMERA';
+            document.getElementById('userName').textContent = userName;
+            document.getElementById('profileName').textContent = userName;
+            
+            // Animate on load
+            anime({
+                targets: '.app-header',
+                translateY: [-50, 0],
+                opacity: [0, 1],
+                duration: 800,
+                easing: 'easeOutCubic'
+            });
+            
+            anime({
+                targets: '.card, .device-card',
+                translateY: [30, 0],
+                opacity: [0, 1],
+                duration: 800,
+                delay: anime.stagger(100),
+                easing: 'easeOutCubic'
+            });
+        }
+        
+        function loadUserData() {
+            const stats = JSON.parse(localStorage.getItem('userStats') || '{"focusTime": 0, "tasksCompleted": 0}');
+            document.getElementById('focusTimeToday').textContent = stats.focusTime + 'h';
+            document.getElementById('tasksCompleted').textContent = stats.tasksCompleted;
+        }
+        
+        function updateDate() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateStr = new Date().toLocaleDateString('id-ID', options);
+            document.getElementById('currentDate').textContent = dateStr;
+        }
+        
+        // Page Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            currentPage = pageId;
+            
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Animate page transition
+            anime({
+                targets: `#${pageId}`,
+                translateY: [20, 0],
+                opacity: [0, 1],
+                duration: 400,
+                easing: 'easeOutCubic'
+            });
+            
+            // Refresh calendar if calendar page
+            if (pageId === 'calendarPage') {
+                generateCalendar();
+            }
+        }
+        
+        // Calendar Functions
+        function generateCalendar() {
+            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                              'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            document.getElementById('currentMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+            
+            // Add day headers
+            const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+            days.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day';
+                dayHeader.style.fontWeight = '600';
+                dayHeader.style.color = '#6B7280';
+                dayHeader.textContent = day;
+                calendarGrid.appendChild(dayHeader);
+            });
+            
+            // Get first day and total days
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const today = new Date();
+            
+            // Add empty cells
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-day';
+                calendarGrid.appendChild(emptyCell);
+            }
+            
+            // Add days
+            for (let day = 1; day <= totalDays; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+                dayCell.textContent = day;
+                
+                // Check if today
+                if (day === today.getDate() && 
+                    currentMonth === today.getMonth() && 
+                    currentYear === today.getFullYear()) {
+                    dayCell.classList.add('today');
+                }
+                
+                // Check if has events
+                if (Math.random() > 0.7) {
+                    dayCell.classList.add('has-event');
+                }
+                
+                dayCell.onclick = () => selectDate(day);
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+        
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            generateCalendar();
+        }
+        
+        function selectDate(day) {
+            selectedDate = new Date(currentYear, currentMonth, day);
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            document.getElementById('selectedDateText').textContent = selectedDate.toLocaleDateString('id-ID', options);
+            loadTasksForDate(selectedDate);
+        }
+        
+        function loadTasksForDate(date) {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const dateTasks = tasks.filter(task => {
+                const taskDate = new Date(task.date);
+                return taskDate.toDateString() === date.toDateString();
+            });
+            
+            const scheduleDiv = document.getElementById('selectedDateSchedule');
+            scheduleDiv.innerHTML = '';
+            
+            if (dateTasks.length === 0) {
+                scheduleDiv.innerHTML = '<p class="text-muted text-center">Tidak ada agenda</p>';
+            } else {
+                dateTasks.forEach(task => {
+                    const taskItem = document.createElement('div');
+                    taskItem.className = 'timeline-item';
+                    taskItem.innerHTML = `
+                        <div class="timeline-time">${task.startTime} - ${task.endTime}</div>
+                        <div class="timeline-title">${task.title}</div>
+                        <div class="timeline-duration">${task.category}</div>
+                    `;
+                    scheduleDiv.appendChild(taskItem);
+                });
+            }
+        }
+        
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const today = new Date();
+            const todayTasks = tasks.filter(task => {
+                const taskDate = new Date(task.date);
+                return taskDate.toDateString() === today.toDateString();
+            });
+            
+            const scheduleDiv = document.getElementById('todaySchedule');
+            scheduleDiv.innerHTML = '';
+            
+            if (todayTasks.length === 0) {
+                scheduleDiv.innerHTML = '<p class="text-muted text-center">Tidak ada jadwal hari ini</p>';
+            } else {
+                todayTasks.forEach(task => {
+                    const taskItem = document.createElement('div');
+                    taskItem.className = 'timeline-item';
+                    taskItem.innerHTML = `
+                        <div class="timeline-time">${task.startTime} - ${task.endTime}</div>
+                        <div class="timeline-title">${task.title}</div>
+                        <div class="timeline-duration">${task.category}</div>
+                    `;
+                    scheduleDiv.appendChild(taskItem);
+                });
+            }
+        }
+        
+        // Task Management
+        function showAddTaskModal() {
+            const modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+            document.getElementById('taskDate').valueAsDate = selectedDate;
+            modal.show();
+        }
+        
+        function addTask() {
+            const title = document.getElementById('taskTitle').value;
+            const date = document.getElementById('taskDate').value;
+            const startTime = document.getElementById('taskStartTime').value;
+            const endTime = document.getElementById('taskEndTime').value;
+            const category = document.getElementById('taskCategory').value;
+            
+            if (!title || !date || !startTime || !endTime) {
+                alert('Mohon lengkapi semua field');
+                return;
+            }
+            
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            tasks.push({ title, date, startTime, endTime, category, completed: false });
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            
+            bootstrap.Modal.getInstance(document.getElementById('addTaskModal')).hide();
+            loadTasks();
+            loadTasksForDate(selectedDate);
+            
+            // Clear form
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskStartTime').value = '';
+            document.getElementById('taskEndTime').value = '';
+        }
+        
+        // Focus Timer
+        function startFocusSession() {
+            showPage('timerPage');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.nav-item')[2].classList.add('active');
+        }
+        
+        function toggleTimer() {
+            const playBtn = document.getElementById('playBtn');
+            
+            if (!isTimerRunning) {
+                isTimerRunning = true;
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                playBtn.classList.remove('play');
+                playBtn.classList.add('pause');
+                startTimer();
+                
+                // Show notification
+                showNotification('Focus Session dimulai!', 'Tetap fokus dan produktif 💪');
+            } else {
+                isTimerRunning = false;
+                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                playBtn.classList.remove('pause');
+                playBtn.classList.add('play');
+                clearInterval(timerInterval);
+            }
+        }
+        
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                } else {
+                    stopTimer();
+                    showNotification('Sesi Selesai!', 'Hebat! Saatnya istirahat sebentar ☕');
+                    updateStats();
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update progress circle
+            const totalSeconds = 1500;
+            const progress = ((totalSeconds - timerSeconds) / totalSeconds) * 691;
+            document.getElementById('timerProgress').style.strokeDashoffset = 691 - progress;
+        }
+        
+        function stopTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerSeconds = 1500;
+            updateTimerDisplay();
+            document.getElementById('timerProgress').style.strokeDashoffset = 691;
+            
+            const playBtn = document.getElementById('playBtn');
+            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            playBtn.classList.remove('pause');
+            playBtn.classList.add('play');
+        }
+        
+        function updateStats() {
+            const stats = JSON.parse(localStorage.getItem('userStats') || '{"focusTime": 0, "tasksCompleted": 0}');
+            stats.focusTime += 0.5; // 25 minutes = 0.5 hours (rounded)
+            localStorage.setItem('userStats', JSON.stringify(stats));
+            loadUserData();
+        }
+        
+        // Voice Search
+        function startVoiceSearch() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            const voiceStatus = document.getElementById('voiceStatus');
+            
+            voiceBtn.classList.add('listening');
+            voiceStatus.textContent = 'Mendengarkan...';
+            
+            // Simulate voice recognition
+            setTimeout(() => {
+                voiceBtn.classList.remove('listening');
+                voiceStatus.textContent = 'Memproses...';
+                
+                setTimeout(() => {
+                    voiceStatus.textContent = 'Siap mendengarkan...';
+                    showNotification('AI Assistant', 'Hasil pencarian ditampilkan di MetaGlasses AR');
+                }, 1000);
+            }, 2000);
+        }
+        
+        function askAI(question) {
+            showNotification('AI Assistant', `Mencari: "${question}"`);
+            
+            setTimeout(() => {
+                showNotification('AI Assistant', 'Hasil ditampilkan di MetaGlasses AR');
+            }, 1500);
+        }
+        
+        // Device Management
+        function disconnectDevice() {
+            if (confirm('Putuskan koneksi dengan MetaGlasses?')) {
+                document.getElementById('deviceStatusText').textContent = 'Terputus';
+                document.querySelector('.status-dot').style.background = '#EF4444';
+                showNotification('Device', 'MetaGlasses terputus');
+                
+                setTimeout(() => {
+                    document.getElementById('deviceStatusText').textContent = 'Terhubung - AR Ready';
+                    document.querySelector('.status-dot').style.background = '#10B981';
+                    showNotification('Device', 'MetaGlasses tersambung kembali');
+                }, 3000);
+            }
+        }
+        
+        function showBlockedAppsModal() {
+            const modal = new bootstrap.Modal(document.getElementById('blockedAppsModal'));
+            modal.show();
+        }
+        
+        // Notifications
+        function showNotification(title, message) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: message,
+                    icon: '/icon-192.png'
+                });
+            } else {
+                // Fallback: show in-app notification
+                const toast = document.createElement('div');
+                toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-3';
+                toast.style.zIndex = '9999';
+                toast.innerHTML = `
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <strong>${title}</strong><br>${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+        }
+        
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+        
+        // Service Worker Registration
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('Service Worker registered:', registration);
+                }).catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+            }
+        }
+        
+        // Install manifest for PWA
+        const manifestData = {
+            name: 'TIMERA - Smart Time Manager',
+            short_name: 'TIMERA',
+            description: 'Aplikasi manajemen waktu dengan integrasi AR MetaGlasses',
+            start_url: '/',
+            display: 'standalone',
+            background_color: '#E0F2FE',
+            theme_color: '#60A5FA',
+            icons: [
+                {
+                    src: '/icon-192.png',
+                    sizes: '192x192',
+                    type: 'image/png'
+                },
+                {
+                    src: '/icon-512.png',
+                    sizes: '512x512',
+                    type: 'image/png'
+                }
+            ]
+        };
+        
+        // Create manifest blob and link
+        const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestURL;
+        document.head.appendChild(manifestLink);
+    </script>
+    
+    <script>
+        // Service Worker Code (inline for single file)
+        const swCode = `
+        const CACHE_NAME = 'timera-v1';
+        const urlsToCache = [
+            '/',
+            '/index.html'
+        ];
+        
+        self.addEventListener('install', event => {
+            event.waitUntil(
+                caches.open(CACHE_NAME)
+                    .then(cache => cache.addAll(urlsToCache))
+            );
+        });
+        
+        self.addEventListener('fetch', event => {
+            event.respondWith(
+                caches.match(event.request)
+                    .then(response => response || fetch(event.request))
+            );
+        });
+        `;
+        
+        // Register service worker with inline code
+        if ('serviceWorker' in navigator) {
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swURL = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(swURL);
+        }
+    </script>
+</body>
+</html>
